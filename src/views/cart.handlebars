@@ -1,0 +1,55 @@
+<div style="text-align: start; margin: 20px;">
+  <a href="/">
+    <button style="padding: 8px 16px; background-color: steelblue; color: white; border: none; border-radius: 5px; cursor: pointer;">
+      Volver al Home
+    </button>
+  </a>
+</div>
+
+<h1 style="text-align: center; color: steelblue;">Productos en el carrito</h1>
+
+{{#if cart.products.length}}
+  <div style="display: flex; flex-direction: column; align-items: center; gap: 20px;">
+    {{#each cart.products}}
+      <div style="border: 1px solid #ccc; border-radius: 8px; padding: 12px; width: 300px;">
+        <p><strong>Producto:</strong> {{this.product.title}}</p>
+        <p><strong>Precio:</strong> ${{this.product.price}}</p>
+        <p><strong>Cantidad:</strong> {{this.quantity}}</p>
+        <p><strong>Subtotal:</strong> ${{multiply this.product.price this.quantity}}</p>
+      </div>
+    {{/each}}
+  </div>
+{{else}}
+  <p style="text-align: center;">El carrito está vacío.</p>
+{{/if}}
+<div style="text-align: center; margin-top: 30px;">
+  <button onclick="eliminarCarrito()" style="padding: 10px 20px; background-color: crimson; color: white; border: none; border-radius: 5px; cursor: pointer;">
+    Vaciar carrito
+  </button>
+</div>
+
+
+<script>
+  async function eliminarCarrito() {
+    const cartId = '{{cart._id}}';
+
+    if (!confirm("¿Estás seguro de que querés vaciar el carrito?")) return;
+
+    try {
+      const res = await fetch(`/api/carts/${cartId}`, {
+        method: 'DELETE'
+      });
+
+      const data = await res.json();
+      if (data.status === 'success') {
+        alert('Carrito vaciado correctamente');
+        location.reload();
+      } else {
+        alert('Error: ' + data.message);
+      }
+    } catch (err) {
+      alert('Error de red al intentar vaciar el carrito');
+      console.error(err);
+    }
+  }
+</script>

@@ -1,0 +1,66 @@
+<div style="text-align: start; margin-top: 30px;">
+  <a href="/">
+    <button style="padding: 8px 16px; background-color: steelblue; color: white; border: none; border-radius: 5px; cursor: pointer;">
+      Volver al Home
+    </button>
+  </a>
+</div>
+<h1 style="text-align: center; color: steelblue;">Lista de productos</h1>
+{{#if products.length}}
+  <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 20px;">
+    {{#each products}}
+      <div style="border: 1px solid #ccc; border-radius: 10px; padding: 16px; width: 280px; box-shadow: 2px 2px 8px rgba(0,0,0,0.1);">
+        <h3 style="margin-top: 0;">{{title}}</h3>
+        <p><strong>Precio:</strong> ${{price}}</p>
+        <p><strong>Categoría:</strong> {{category}}</p>
+        <p><strong>Stock:</strong> {{stock}}</p>
+        <form action="/api/carts/1/product/{{_id}}" method="POST" style="margin-top: 8px;">
+          <label for="qty-{{_id}}">Cantidad:</label>
+          <input id="qty-{{_id}}" type="number" name="quantity" value="1" min="1" max="{{stock}}" />
+        </form>
+            <button onclick="agregarAlCarrito('{{_id}}')">Agregar al carrito</button>
+      </div>
+    {{/each}}
+  </div>
+{{else}}
+  <p style="text-align: center;">No se encontraron productos.</p>
+{{/if}}
+
+<div style="text-align: center; margin-top: 30px;">
+  {{#if hasPrevPage}}
+    <a href="{{prevLink}}" style="margin-right: 15px;"> Anterior</a>
+  {{/if}}
+
+  <span>Página {{page}} de {{totalPages}}</span>
+
+  {{#if hasNextPage}}
+    <a href="{{nextLink}}" style="margin-left: 15px;">Siguiente</a>
+  {{/if}}
+</div>
+
+<script>
+  async function agregarAlCarrito(productId) {
+    const cartId = localStorage.getItem('cartId');
+    const quantityInput = document.getElementById(`qty-${productId}`);
+    const quantity = parseInt(quantityInput?.value || "1", 10);
+    if (!cartId) return alert("No tenés un carrito creado");
+
+    try {
+      const res = await fetch(`/api/carts/${cartId}/product/${productId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ quantity })
+      });
+
+      const data = await res.json();
+      if (data.status === 'success') {
+        alert('Producto agregado al carrito con éxito');
+      } else {
+        alert('Error: ' + data.message);
+      }
+    } catch (err) {
+      alert('Error de red al agregar al carrito');
+      console.error(err);
+    }
+  }
+</script>

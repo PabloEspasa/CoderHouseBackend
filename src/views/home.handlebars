@@ -1,6 +1,121 @@
-<h1>Lista de productos (HTTP)</h1>
-<ul>
-  {{#each products}}
-    <li><strong>{{title}}</strong> - ${{price}}</li>
-  {{/each}}
-</ul>
+<h1>Desarrollo Avanzado de Backend</h1>
+
+<br>
+<br>
+<section>
+  <h2>Ver productos</h2>
+  <div style="display: flex; justify-content: center;">
+    <a href="/products">
+      <button>Ver productos</button>
+    </a>
+  </div>
+</section>
+
+<br>
+
+<section>
+  <h2> Agregar nuevo producto</h2>
+  <div style="display: flex; justify-content: center;">
+  <button id="btnMostrarFormulario">Nuevo producto</button>
+  </div>
+  <div style="display: flex; justify-content: center;">
+  <form id="formNuevoProducto" style="display: none; margin-top: 10px;">
+    <input type="text" id="code" placeholder="Código único" required />
+    <input type="text" id="title" placeholder="Nombre" required />
+    <input type="text" id="description" placeholder="Descripción" required>
+    <input type="number" id="price" placeholder="Precio" required />
+    <input type="number" id="stock" placeholder="Cantidad" required>
+    <input type="text" id="category" placeholder="Categoría" required />
+    <button type="submit">Crear</button>
+  </form>
+  </div>
+</section>
+
+<br>
+
+<section>
+  <h2>Crear carrito</h2>
+  <div style="display: flex; justify-content: center;">
+  <button id="crearCarritoBtn">Crear carrito</button>
+  </div>
+</section>
+
+<br>
+
+<section>
+  <h2>Ver productos de un carrito</h2>
+  <form id="viewCartForm">
+    <input type="text" id="cartIdInput" placeholder="ID del carrito" required>
+    <button type="submit">Ver carrito</button>
+  </form>
+</section>
+
+<script>
+    const formBtn = document.getElementById('btnMostrarFormulario');
+    const form = document.getElementById('formNuevoProducto');
+
+    document.getElementById('viewCartForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const cartId = document.getElementById('cartIdInput').value.trim();
+        if (cartId) {
+        window.location.href = `/carts/${cartId}`;
+        }
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+    const crearBtn = document.getElementById('crearCarritoBtn');
+    if (crearBtn) {
+        crearBtn.addEventListener('click', async () => {
+        try {
+            const res = await fetch('/api/carts', { method: 'POST' });
+            const data = await res.json();
+            if (data.status === 'success') {
+            const cartId = data.payload._id;
+            localStorage.setItem('cartId', cartId);
+            alert('Carrito creado con éxito!');
+            } else {
+            alert(' Error al crear el carrito');
+            }
+        } catch (error) {
+            alert(' Error de red al crear el carrito');
+            console.error(error);
+        }
+        });
+    }
+    });
+
+    formBtn.addEventListener('click', () => {
+    form.style.display = form.style.display === 'none' ? 'block' : 'none';
+    });
+
+    form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const title = document.getElementById('title').value;
+    const price = parseFloat(document.getElementById('price').value);
+    const description = document.getElementById('description').value;
+    const stock = document.getElementById('stock').value
+    const category = document.getElementById('category').value;
+    const code = document.getElementById('code').value;
+
+    try {
+        const res = await fetch('/api/products', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, code, price, category, description, stock })
+        });
+
+        const data = await res.json();
+        if (data.status === 'success') {
+        alert(`Producto agregado con éxito:\n${data.payload.title}`);
+        form.reset();
+        form.style.display = 'none';
+        } else {
+        alert('Error al agregar producto');
+        }
+    } catch (err) {
+        alert('Error de red al agregar producto');
+        console.error(err);
+    }
+    });
+</script>
